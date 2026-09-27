@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rating MBG (My Bini Gw) - Cek Rating Doi Kamu!</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- html2canvas for card download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                        },
+                        cute: {
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            yellow: '#f59e0b',
+                            blue: '#3b82f6'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 50%, #ffe4e6 100%);
+            min-height: 100vh;
+        }
+        .font-heading {
+            font-family: 'Fredoka', cursive;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .floating-heart {
+            position: absolute;
+            animation: float 6s ease-in-out infinite;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(15deg); }
+        }
+        .pulse-subtle {
+            animation: pulseSubtle 2s infinite ease-in-out;
+        }
+        @keyframes pulseSubtle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .spin-slow {
+            animation: spin 8s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fda4af;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f43f5e;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased relative overflow-x-hidden pb-12">
+
+    <!-- AUDIO PLAYER -->
+    <audio id="bgMusic" loop src="lessa.mp3"></audio>
+
+    <!-- FLOATING MUSIC CONTROLLER -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="musicToggleBtn" onclick="toggleMusic()" class="flex items-center gap-2.5 px-3.5 py-2 rounded-full glass-card border border-white/80 shadow-lg text-slate-700 hover:text-rose-500 transition duration-300 group">
+            <div id="musicDisc" class="w-7 h-7 rounded-full bg-gradient-to-tr from-rose-500 to-purple-600 text-white flex items-center justify-center text-xs shadow-md">
+                <i class="fa-solid fa-music"></i>
+            </div>
+            <div class="text-left hidden sm:block pr-1">
+                <div class="text-[10px] font-bold uppercase tracking-wider text-rose-500 leading-none">BGM</div>
+                <div id="musicStatus" class="text-xs font-bold leading-tight text-slate-700">Musik.mp3</div>
+            </div>
+            <i id="musicIcon" class="fa-solid fa-play text-xs text-rose-500 ml-1"></i>
+        </button>
+    </div>
+
+    <!-- BACKGROUND ANIMATED DECORATIONS -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <i class="fa-solid fa-heart floating-heart text-pink-300 text-3xl top-10 left-[10%]" style="animation-delay: 0s;"></i>
+        <i class="fa-solid fa-sparkles floating-heart text-purple-300 text-2xl top-1/4 right-[15%]" style="animation-delay: 1.5s;"></i>
+        <i class="fa-solid fa-heart floating-heart text-rose-400 text-4xl bottom-20 left-[15%]" style="animation-delay: 2s;"></i>
+        <i class="fa-solid fa-star floating-heart text-amber-300 text-3xl bottom-1/3 right-[10%]" style="animation-delay: 0.7s;"></i>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container mx-auto px-4 py-8 max-w-2xl relative z-10">
+
+        <header class="text-center mb-8">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rose-100 text-rose-600 font-semibold text-xs md:text-sm mb-3 shadow-sm border border-rose-200">
+                <i class="fa-solid fa-fire text-amber-500"></i> Generator Rating Bini / Pacar No #1
+            </div>
+            <h1 class="font-heading text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-purple-600 to-pink-500 tracking-wide mb-2 drop-shadow-sm">
+                Rating MBG <span class="text-xs md:text-lg align-middle bg-rose-500 text-white px-2 py-0.5 rounded-lg ml-1 font-sans">My Bini Gw</span>
+            </h1>
+            <p class="text-slate-600 text-sm md:text-base max-w-md mx-auto">
+                Penasaran seberapa tinggi statistik keimutan dan keajaiban pacar kamu? Upload fotonya & biarkan algoritma kasmaran menghitungnya! 💖✨
+            </p>
+        </header>
+
+        <main id="form-section" class="glass-card rounded-3xl p-6 md:p-8 shadow-xl border border-white/80 transition-all duration-300">
+            <form id="rating-form" onsubmit="handleFormSubmit(event)" class="space-y-6">
+                
+                <!-- Image Upload Area -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i class="fa-solid fa-camera text-rose-500 mr-1"></i> Foto Pacar / Doi Kamu <span class="text-rose-500">*</span>
+                    </label>
+                    <div id="drop-zone" onclick="document.getElementById('photo-input').click();" 
+                        class="relative cursor-pointer border-2 border-dashed border-rose-300 hover:border-rose-500 bg-rose-50/50 hover:bg-rose-50 transition-all rounded-2xl p-6 text-center group">
+                        
+                        <input type="file" id="photo-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)" required>
+                        
+                        <!-- Upload Placeholder -->
+                        <div id="upload-placeholder" class="flex flex-col items-center justify-center py-4">
+                            <div class="w-16 h-16 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-inner">
+                                <i class="fa-solid fa-cloud-arrow-up text-2xl"></i>
+                            </div>
+                            <p class="text-sm font-medium text-slate-700">Klik atau seret foto doi ke sini</p>
+                            <p class="text-xs text-slate-400 mt-1">Format: JPG, PNG, WEBP (Max 5MB)</p>
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="preview-container" class="hidden relative w-full flex flex-col items-center">
+                            <img id="image-preview" src="" alt="Preview" class="max-h-64 rounded-xl shadow-md object-cover border-2 border-white">
+                            <button type="button" onclick="resetImage(event)" class="mt-3 text-xs bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-full font-medium shadow transition flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-left"></i> Ganti Foto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Nickname -->
+                <div>
+                    <label for="nickname" class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i class="fa-solid fa-user-heart text-rose-500 mr-1"></i> Nama / Panggilan Doi <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" id="nickname" placeholder="Misal: Adinda Sayang, Waifu #1, Mbak Pacar" required
+                        class="w-full px-4 py-3 rounded-xl border border-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition bg-white/80 placeholder:text-slate-400 text-slate-700 font-medium">
+                </div>
+
+                <!-- Input Description / Hobi -->
+                <div>
+                    <label for="description" class="block text-sm font-semibold text-slate-700 mb-2">
+                        <i class="fa-solid fa-quote-left text-rose-500 mr-1"></i> Kebiasaan Unik / Ciri Khusus <span class="text-slate-400 font-normal">(Opsional)</span>
+                    </label>
+                    <input type="text" id="description" placeholder="Misal: Hobi ngambek tiba-tiba, suka boba tapi ngaku diet" 
+                        class="w-full px-4 py-3 rounded-xl border border-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent transition bg-white/80 placeholder:text-slate-400 text-slate-700 font-medium">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submit-btn" class="w-full py-4 px-6 bg-gradient-to-r from-rose-500 via-pink-500 to-purple-600 hover:from-rose-600 hover:via-pink-600 hover:to-purple-700 text-white font-heading text-lg font-bold rounded-2xl shadow-lg shadow-rose-200 hover:shadow-rose-300 transition-all transform hover:-translate-y-0.5 active:translate-y-0 pulse-subtle flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Analisis Rating MBG Sekarang!
+                </button>
+            </form>
+        </main>
+
+        <div id="loading-section" class="hidden glass-card rounded-3xl p-10 text-center shadow-xl border border-white/80">
+            <div class="relative w-24 h-24 mx-auto mb-6">
+                <div class="absolute inset-0 rounded-full border-4 border-rose-200 border-t-rose-500 animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-rose-500 text-2xl animate-pulse">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+            </div>
+            <h3 class="font-heading text-2xl font-bold text-slate-800 mb-2" id="loading-title">Mengunggah Foto ke Cloudinary...</h3>
+            <p class="text-slate-500 text-sm" id="loading-sub">Algoritma AI kasmaran sedang memproses pesona doi kamu...</p>
+        </div>
+
+        <div id="result-section" class="hidden space-y-6">
+            
+            <!-- Result Card to Download -->
+            <div id="result-card" class="glass-card rounded-3xl overflow-hidden shadow-2xl border-2 border-rose-200 relative bg-white">
+                
+                <!-- Card Header Tag -->
+                <div class="bg-gradient-to-r from-rose-500 to-pink-500 text-white py-2 px-4 text-center text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-certificate text-amber-300"></i> Sertifikat Resmi MBG Approved <i class="fa-solid fa-certificate text-amber-300"></i>
+                </div>
+
+                <div class="p-6 md:p-8">
+                    <!-- Top Info: Photo & Name -->
+                    <div class="flex flex-col sm:flex-row gap-6 items-center sm:items-start text-center sm:text-left">
+                        <div class="relative shrink-0">
+                            <img id="res-image" src="" alt="Girlfriend Photo" class="w-36 h-36 md:w-40 md:h-40 rounded-2xl object-cover shadow-md border-4 border-white ring-4 ring-rose-100">
+                            <span id="res-badge-overlay" class="absolute -bottom-3 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-md border border-white uppercase tracking-wider">
+                                Waifu SSS
+                            </span>
+                        </div>
+
+                        <div class="flex-1 space-y-2">
+                            <div>
+                                <span class="text-xs font-bold text-rose-500 uppercase tracking-wider">Target Rating</span>
+                                <h2 id="res-name" class="font-heading text-2xl md:text-3xl font-bold text-slate-800 leading-tight">Nama Doi</h2>
+                                <p id="res-desc" class="text-xs md:text-sm text-slate-500 italic mt-1">"Kebiasaan unik doi"</p>
+                            </div>
+
+                            <!-- Overall Score Box -->
+                            <div class="pt-2">
+                                <div class="inline-flex items-baseline bg-rose-50 border border-rose-200 px-4 py-2 rounded-2xl">
+                                    <span class="text-xs font-bold text-slate-500 mr-2">TOTAL SKOR:</span>
+                                    <span id="res-score" class="font-heading text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-purple-600">999/100</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-6 border-slate-100">
+
+                    <!-- Stats Breakdown -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-chart-simple text-rose-500"></i> Break-Down Atribut Doi
+                        </h4>
+
+                        <!-- Stat Items -->
+                        <div class="space-y-2.5" id="stats-container">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <hr class="my-6 border-slate-100">
+
+                    <!-- Funny Verdict Box -->
+                    <div class="bg-gradient-to-br from-rose-50 via-purple-50 to-pink-50 rounded-2xl p-4 border border-rose-100 relative">
+                        <i class="fa-solid fa-quote-left absolute top-3 left-3 text-rose-200 text-2xl pointer-events-none"></i>
+                        <div class="relative z-10">
+                            <span class="text-xs font-bold text-rose-600 uppercase tracking-wider block mb-1">
+                                <i class="fa-solid fa-gavel mr-1"></i> Keputusan Algoritma
+                            </span>
+                            <p id="res-verdict" class="text-slate-700 text-sm md:text-base font-semibold italic leading-relaxed pl-4 border-l-2 border-rose-400">
+                                "Wajib dipertahankan, stok terbatas!"
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Footer timestamp & credit in card -->
+                    <div class="mt-6 text-center sm:flex sm:justify-between sm:items-center text-[11px] text-slate-400 border-t border-slate-100 pt-3">
+                        <span>Diverifikasi oleh Website Rating MBG</span>
+                        <span id="res-date" class="mt-1 sm:mt-0 block">2026-09-28</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="downloadCard()" class="flex-1 py-3.5 px-4 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-download text-amber-400"></i> Download / Simpan Gambar
+                </button>
+
+                <button onclick="copyShareText()" class="flex-1 py-3.5 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-2xl shadow-md transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-share-nodes"></i> Bagikan Ke Teman
+                </button>
+
+                <button onclick="resetAll()" class="py-3.5 px-5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-2xl shadow-md border border-slate-200 transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-solid fa-rotate-left text-rose-500"></i> Cek Lagi
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 z-50 pointer-events-none text-sm">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-msg">Pesan notifikasi</span>
+    </div>
+
+    <script>
+        // CONFIG CLOUDINARY
+        const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/ux8eh4yu/image/upload";
+        const CLOUDINARY_UPLOAD_PRESET = "darastra_preset";
+
+        // Global State variables
+        let selectedFile = null;
+        let localDataUrl = null;
+        let isPlayingMusic = false;
+
+        // Audio Player Controls
+        const bgMusic = document.getElementById('bgMusic');
+        const musicIcon = document.getElementById('musicIcon');
+        const musicDisc = document.getElementById('musicDisc');
+
+        function toggleMusic() {
+            if (isPlayingMusic) {
+                bgMusic.pause();
+                isPlayingMusic = false;
+                musicIcon.className = "fa-solid fa-play text-xs text-rose-500 ml-1";
+                musicDisc.classList.remove('spin-slow');
+            } else {
+                bgMusic.play().then(() => {
+                    isPlayingMusic = true;
+                    musicIcon.className = "fa-solid fa-pause text-xs text-rose-500 ml-1";
+                    musicDisc.classList.add('spin-slow');
+                }).catch(err => {
+                    console.log("Autoplay blocked or audio error:", err);
+                });
+            }
+        }
+
+        // Auto play on initial click interaction
+        function enableAutoPlayOnInteraction() {
+            if (!isPlayingMusic) {
+                toggleMusic();
+            }
+            document.removeEventListener('click', enableAutoPlayOnInteraction);
+        }
+        document.addEventListener('click', enableAutoPlayOnInteraction, { once: true });
+
+        // Data arrays for random generator
+        const BADGES = [
+            "Bidadari Nyasar SSS+",
+            "Waifu Tier Khusus",
+            "Kategori Imut Maksimal",
+            "Penjebak Hati Pro",
+            "Ratu Ngambek Unyu",
+            "Stok Terbatas Limited Edition",
+            "Pawang Emosi Utama",
+            "Lulus S3 Keimutan"
+        ];
+
+        const SCORE_FORMATS = [
+            "1000/10",
+            "9999/100",
+            "Infinity/10",
+            "100/100 Perfect!",
+            "99.9% Kemiripan Bidadari",
+            "10/10 Rekomendasi Tinggi"
+        ];
+
+        const VERDICTS = [
+            "Wajib dipertahankan! Jangan sampai lolos, stok terbatas dan susah dicari duplikatnya.",
+            "10/10 sangat direkomendasikan ke teman, tapi disembunyiin aja biar ga ditikung!",
+            "Hati-hati kalau dia ngambek, auto bangkrut beli boba dan seblak. Tapi tetep bikin kangen!",
+            "Keliatan galak padahal aslinya manja tingkat dewa. Jagain baik-baik bosku!",
+            "Tingkat keimutan melampaui batas wajar. Menyebabkan efek senyum-senyum sendiri sepanjang hari.",
+            "Lulus sertifikasi pacar idaman. Segera ajak ke jenjang yang lebih serius sebelum kehabisan!",
+            "Punya aura magis yang bikin uang tabungan kamu tiba-tiba berubah jadi makanan favorit dia."
+        ];
+
+        const ATTR_LIST = [
+            { name: "Lucu / Gemas", icon: "fa-face-smile-wink", color: "from-pink-400 to-rose-500" },
+            { name: "Tingkat Galak / Spicy", icon: "fa-fire", color: "from-amber-400 to-red-500" },
+            { name: "Kerapian / Style", icon: "fa-sparkles", color: "from-purple-400 to-indigo-500" },
+            { name: "Kesabaran Menghadapi Kamu", icon: "fa-heart", color: "from-emerald-400 to-teal-500" },
+            { name: "Tingkat Kerandoman", icon: "fa-bolt", color: "from-blue-400 to-cyan-500" }
+        ];
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast("Ukuran foto maksimal 5MB ya!", "fa-circle-exclamation text-rose-400");
+                return;
+            }
+
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                localDataUrl = evt.target.result;
+                document.getElementById('image-preview').src = localDataUrl;
+                document.getElementById('upload-placeholder').classList.add('hidden');
+                document.getElementById('preview-container').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function resetImage(e) {
+            e.stopPropagation();
+            selectedFile = null;
+            localDataUrl = null;
+            document.getElementById('photo-input').value = '';
+            document.getElementById('image-preview').src = '';
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            document.getElementById('preview-container').classList.add('hidden');
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            if (!selectedFile && !localDataUrl) {
+                showToast("Tolong pilih/upload foto doi dulu ya!", "fa-circle-exclamation text-rose-400");
+                return;
+            }
+
+            const nickname = document.getElementById('nickname').value.trim();
+            const description = document.getElementById('description').value.trim();
+
+            document.getElementById('form-section').classList.add('hidden');
+            document.getElementById('loading-section').classList.remove('hidden');
+
+            let finalImageUrl = localDataUrl;
+
+            try {
+                document.getElementById('loading-title').innerText = "Mengunggah Foto ke Cloudinary...";
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+                const response = await fetch(CLOUDINARY_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    finalImageUrl = data.secure_url;
+                } else {
+                    console.warn('Cloudinary upload status not ok. Using local Data URL fallback.');
+                }
+            } catch (err) {
+                console.warn('Cloudinary upload error, using fallback preview URL:', err);
+            }
+
+            document.getElementById('loading-title').innerText = "Menghitung Statistik Keimutan...";
+            document.getElementById('loading-sub').innerText = "Menghitung persentase cinta dan kadar kecemburuan...";
+            
+            setTimeout(() => {
+                renderResults(nickname, description, finalImageUrl);
+                document.getElementById('loading-section').classList.add('hidden');
+                document.getElementById('result-section').classList.remove('hidden');
+                
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+
+                showToast("Rating MBG Berhasil Dibuat!", "fa-circle-check text-emerald-400");
+            }, 1200);
+        }
+
+        function renderResults(name, desc, imgUrl) {
+            document.getElementById('res-image').src = imgUrl;
+            document.getElementById('res-name').innerText = name;
+            document.getElementById('res-desc').innerText = desc ? `"${desc}"` : `"Spesies berharga yang wajib disayangi setiap hari."`;
+
+            const randomBadge = BADGES[Math.floor(Math.random() * BADGES.length)];
+            document.getElementById('res-badge-overlay').innerText = randomBadge;
+
+            const randomScore = SCORE_FORMATS[Math.floor(Math.random() * SCORE_FORMATS.length)];
+            document.getElementById('res-score').innerText = randomScore;
+
+            const randomVerdict = VERDICTS[Math.floor(Math.random() * VERDICTS.length)];
+            document.getElementById('res-verdict').innerText = `"${randomVerdict}"`;
+
+            const statsContainer = document.getElementById('stats-container');
+            statsContainer.innerHTML = '';
+
+            ATTR_LIST.forEach(attr => {
+                const val = Math.floor(Math.random() * 25) + 76;
+                
+                const statHtml = `
+                    <div>
+                        <div class="flex justify-between items-center text-xs font-semibold mb-1">
+                            <span class="text-slate-600 flex items-center gap-1.5">
+                                <i class="fa-solid ${attr.icon} text-rose-500 w-4"></i> ${attr.name}
+                            </span>
+                            <span class="text-slate-800 font-bold">${val}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-200">
+                            <div class="bg-gradient-to-r ${attr.color} h-full rounded-full transition-all duration-1000" style="width: ${val}%"></div>
+                        </div>
+                    </div>
+                `;
+                statsContainer.innerHTML += statHtml;
+            });
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('res-date').innerText = `Tanggal Cek: ${today}`;
+        }
+
+        function resetAll() {
+            document.getElementById('result-section').classList.add('hidden');
+            document.getElementById('form-section').classList.remove('hidden');
+            document.getElementById('rating-form').reset();
+            resetImage(new Event('click'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function downloadCard() {
+            showToast("Memproses gambar untuk didownload...", "fa-spinner animate-spin text-amber-400");
+            const cardElem = document.getElementById('result-card');
+
+            html2canvas(cardElem, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: "#ffffff"
+            }).then(canvas => {
+                const link = document.createElement('a');
+                const name = document.getElementById('res-name').innerText.replace(/\s+/g, '_');
+                link.download = `Rating_MBG_${name}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast("Sertifikat Rating MBG berhasil diunduh!", "fa-circle-check text-emerald-400");
+            }).catch(err => {
+                console.error(err);
+                showToast("Gagal mengunduh gambar, coba screenshot ya!", "fa-circle-xmark text-rose-400");
+            });
+        }
+
+        function copyShareText() {
+            const name = document.getElementById('res-name').innerText;
+            const score = document.getElementById('res-score').innerText;
+            const badge = document.getElementById('res-badge-overlay').innerText;
+            
+            const shareText = `🔥 Cek Rating Doi Kamu di Rating MBG (My Bini Gw)!\n\nNama: ${name}\nPredikat: ${badge}\nSkor: ${score}\n\nCoba cek rating pacar kamu juga di aplikasi Rating MBG! 💕`;
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = shareText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            showToast("Teks hasil rating berhasil disalin!", "fa-copy text-purple-400");
+        }
+
+        function showToast(msg, iconClass = "fa-circle-check text-emerald-400") {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = msg;
+            toastIcon.className = `fa-solid ${iconClass} text-lg`;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
